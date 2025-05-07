@@ -112,6 +112,9 @@ def read_file(path, start, incr):
 constants = {'pi': './hundreds/pi.txt', 'e': './hundreds/e.txt', 'phi': './hundreds/phi.txt', 'sqrt2': './hundreds/sqrt2.txt', 'sqrt3': './hundreds/sqrt3.txt', 'sqrt5': './hundreds/sqrt5.txt'}
 print("Choose which constant you want to memorize: pi, e, phi, sqrt2, sqrt3, sqrt5")
 const = input()
+# Defaults to pi if left blank
+if not const:
+    const = 'pi'
 choice = constants.get(const.lower())
 if choice is None:
     print("Invalid choice. Please choose from pi, e, phi, sqrt2, sqrt3, sqrt5.")
