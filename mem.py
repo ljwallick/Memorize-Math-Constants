@@ -109,7 +109,7 @@ def read_file(path, start, incr):
         f.seek(start)
         return f.read(incr)
 
-constants = {'pi': './pi.txt', 'e': './e.txt', 'phi': './phi.txt', 'sqrt2': './sqrt2.txt', 'sqrt3': './sqrt3.txt', 'sqrt5': './sqrt5.txt'}
+constants = {'pi': './hundreds/pi.txt', 'e': './hundreds/e.txt', 'phi': './hundreds/phi.txt', 'sqrt2': './hundreds/sqrt2.txt', 'sqrt3': './hundreds/sqrt3.txt', 'sqrt5': './hundreds/sqrt5.txt'}
 print("Choose which constant you want to memorize: pi, e, phi, sqrt2, sqrt3, sqrt5")
 const = input()
 choice = constants.get(const.lower())
