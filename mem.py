@@ -37,13 +37,14 @@ def compare_numbers(correct, user):
         # Make sur eto reset the color before next line
         if colored: finished_output += Style.RESET_ALL; colored = False
         
-        finished_output += '\n'
+        finished_output += '\n\n'
             
     return finished_output
 
 def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const=None):
     """Check if numbers match when shifted by a few positions and align sequences"""
-    # match_level is how many digits you want matched before telling if you skipped/added digits
+    global fileReader
+
     fixed_user = ""
     fixed_const = ""
     length = "hundreds"
@@ -57,9 +58,12 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
     const_incr = window * 2 + extra_digs
     const_size = len(user_const) + const_incr
 
-    # Delete this if you have no folders like 'hundreds' or 'million', or change if they are different names
-    if const_size > 200: length = 'million'
-    get_digits = lambda start, incr, length=length: read_file(f"./{length}/{const}.txt", start, incr) # Remove '/{length}' if not a folder
+    # Delete this if you have no folders like 'hundreds' or 'capped', or change if they are different names
+    if const_size > 200: length = 'capped'
+
+    fileReader.openPath(f"./{length}/{const}.txt")
+    
+    get_digits = lambda start, incr: fileReader.read(start, incr) # Remove '/{length}' if not a folder
     corr_const = num[const] + get_digits(0, const_size)
     
     # Gives the correct starting point for additional digits from corr_const
@@ -73,7 +77,9 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
         # Change folder destination if it is about to overflow.
         # Delete if you don't have both folders, or change to match the correct name if different
         if const_size + const_incr > 200:
-            length = 'million'
+            length = 'capped'
+            fileReader.newPath(f"./{length}/{const}.txt")
+
         if const_size - j <= window:
             # Ate all the PI? Get More!
             corr_const += get_digits(const_size, const_incr)
@@ -112,30 +118,47 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
             i += 1; j += 1
 
     return fixed_const + corr_const[add_digs: add_digs + extra_digs], fixed_user
+    
+class FileReader:
+    def openPath(self, path):
+        self.path = path
+        self.open()
 
-def read_file(path, start, incr):
-    with open(path, 'r') as f:
-        f.seek(start)
-        return f.read(incr)
+    def newPath(self, path):
+        self.close()
+        self.path = path
+        self.open()
 
-constants = {'pi': './hundreds/pi.txt', 'e': './hundreds/e.txt', 'phi': './hundreds/phi.txt', 'sqrt2': './hundreds/sqrt2.txt', 'sqrt3': './hundreds/sqrt3.txt', 'sqrt5': './hundreds/sqrt5.txt'}
+    def open(self):
+        self.file = open(self.path, 'r')
+
+    def read(self, start, incr):
+        self.file.seek(start)
+        return self.file.read(incr)
+
+    def close(self):
+        self.file.close()
+
+constants = ['pi', 'e', 'phi', 'sqrt2', 'sqrt3', 'sqrt5']
 print("Choose which constant you want to memorize: pi, e, phi, sqrt2, sqrt3, sqrt5")
 const = input()
 # Defaults to pi if left blank
 if not const:
     const = 'pi'
-choice = constants.get(const.lower())
-if choice is None:
+if const not in constants:
     print("Invalid choice. Please choose from pi, e, phi, sqrt2, sqrt3, sqrt5.")
     exit()
 
-print(f"Memorize {const.lower()}! Enter as many digits as you can remember:")
-print("\nNow enter your attempt (press Enter when done):")
+print(f"Memorize {const.lower()}! Enter as many digits as you can remember (press Enter when done):")
 
 user_input = input()
 
-# Check for shifted matches
-fixed_const, fixed_user = check_shifted_match(user_input, const=const)
+fileReader = FileReader()
+try:
+    # Check for shifted matches
+    fixed_const, fixed_user = check_shifted_match(user_input, const=const)
+finally:
+    fileReader.close()
 
 # Show results
 print("\nResults:")
@@ -147,5 +170,5 @@ print(results)
 correct_count = sum(1 for i in range(2, len(fixed_user)) if i < len(fixed_user) and fixed_user[i] == fixed_const[i])
 accuracy = (correct_count / (len(fixed_user) - 2)) * 100 if len(fixed_user) - 2 > 0 else 0
 
-print(f"\nAccuracy: {accuracy:.2f}%")
+print(f"Accuracy: {accuracy:.2f}%")
 print(f"Correct digits: {correct_count}/{len(fixed_user)-2}")
