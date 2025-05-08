@@ -46,18 +46,23 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
     # match_level is how many digits you want matched before telling if you skipped/added digits
     fixed_user = ""
     fixed_const = ""
+    length = "hundreds"
     i = 0
     j = 0
+    num = {'pi': '3.', 'e': '2.', 'phi': '1.', 'sqrt2': '1.', 'sqrt3': '1.', 'sqrt5': '2.'}
+    if '.' not in user_const:
+        user_const = num[const] + user_const
 
     # Calculate a good amount of digits to add when you run on low
     const_incr = window * 2 + extra_digs
     const_size = len(user_const) + const_incr
-    num = {'pi': '3.', 'e': '2.', 'phi': '1.', 'sqrt2': '1.', 'sqrt3': '1.', 'sqrt5': '2.'}
 
-    get_digits = lambda start, incr: read_file(f"./{const}.txt", start, incr)
+    # Delete this if you have no folders like 'hundreds' or 'million', or change if they are different names
+    if const_size > 200: length = 'million'
+    get_digits = lambda start, incr, length=length: read_file(f"./{length}/{const}.txt", start, incr) # Remove '/{length}' if not a folder
     corr_const = num[const] + get_digits(0, const_size)
     
-    # Gives the correct starting point for additional digits from corr_PI
+    # Gives the correct starting point for additional digits from corr_const
     add_digs = len(user_const)
 
     # 0 means you don't want to shift digits, right?
@@ -65,6 +70,10 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
         return corr_const[:add_digs + extra_digs], user_const
     
     while i < len(user_const):
+        # Change folder destination if it is about to overflow.
+        # Delete if you don't have both folders, or change to match the correct name if different
+        if const_size + const_incr > 200:
+            length = 'million'
         if const_size - j <= window:
             # Ate all the PI? Get More!
             corr_const += get_digits(const_size, const_incr)
@@ -92,7 +101,7 @@ def check_shifted_match(user_const, window=5, match_level=2, extra_digs=5, const
                 shift = ' ' * k
                 fixed_user += user_const[i: i + k + 1]
                 # Add placeholders then just one digit
-                fixed_PI += shift + corr_const[j]
+                fixed_const += shift + corr_const[j]
                 i += k + 1; j += 1
                 add_digs -= k
                 break
